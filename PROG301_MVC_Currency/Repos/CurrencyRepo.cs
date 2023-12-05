@@ -66,10 +66,35 @@ namespace PROG301_MVC_Currency.Repos
         public int GetCoinCount() => Coins.Count();
 
         /// <summary>
+        /// Creates a dictionary where the key is a given coin's type and the value is the integer count
+        /// of that coin type in the repository's coins.
+        /// </summary>
+        /// <returns>A dictionary of coin counts by type.</returns>
+        public Dictionary<Type, int> GetCoinCounts()
+        {
+            Dictionary<Type, int> counts = new Dictionary<Type, int>();
+            Type[] types = RepoCoinDict[GetType()].Select(c => c.GetType()).ToArray();
+
+            foreach (Type t in types)
+            {
+                int count = Coins.FindAll(c => c.GetType() == t).Count();
+                counts[t] = count;
+            }
+
+            return counts;
+        }
+
+        /// <summary>
         /// Calculates and returns the total value of the coins in the repository.
         /// </summary>
         /// <returns>The total value of the coins in the repository.</returns>
-        public decimal TotalValue() => Coins.OfType<Coin>().Sum(coin => coin.Value);
+        public decimal TotalValue() => Coins.Sum(coin => coin.Value);
+
+        /// <summary>
+        /// Calculates and returns the total XAU value of the coins in the repository.
+        /// </summary>
+        /// <returns>The total XAU value of the coins in the repository.</returns>
+        public decimal TotalXAUValue() => Coins.Sum(coin => coin.XAUValue);
 
         #endregion
 
@@ -84,7 +109,7 @@ namespace PROG301_MVC_Currency.Repos
         public ICurrencyRepo MakeChange(decimal Amount)
         {
             ICurrencyRepo repo = CreateInstance<ICurrencyRepo>(GetType());
-            List<Coin> coins = Coins.Cast<Coin>().ToList();
+            List<ICoin> coins = Coins;
 
             // Sort the coins in descending order by value.
             coins.Sort((coin1, coin2) => -coin1.Value.CompareTo(coin2.Value));
@@ -119,7 +144,7 @@ namespace PROG301_MVC_Currency.Repos
 
             
             ICurrencyRepo repo = CreateInstance<ICurrencyRepo>(GetType());
-            List<Coin> coins = Coins.Cast<Coin>().ToList();
+            List<ICoin> coins = Coins;
 
             // Sort the coins in descending order by value.
             coins.Sort((coin1, coin2) => -coin1.Value.CompareTo(coin2.Value));
@@ -150,10 +175,10 @@ namespace PROG301_MVC_Currency.Repos
         /// </summary>
         /// <param name="Amount">The amount for which change needs to be made.</param>
         /// <returns>A new currency repository with the change for the specified amount.</returns>
-        public virtual ICurrencyRepo CreateChange(decimal Amount)
+        public ICurrencyRepo CreateChange(decimal Amount)
         {
             ICurrencyRepo repo = CreateInstance<ICurrencyRepo>(GetType());
-            List<Coin> coins = CoinValsByType(GetType()).Cast<Coin>().ToList();
+            List<ICoin> coins = CoinValsByType(GetType());
 
             // Sort the coins in descending order by value.
             coins.Sort((coin1, coin2) => -coin1.Value.CompareTo(coin2.Value));
@@ -179,18 +204,18 @@ namespace PROG301_MVC_Currency.Repos
         }
 
         /// <summary>
-        // Creates a new currency repository with change for a given amount tendered and total cost.
+        /// Creates a new currency repository with change for a given amount tendered and total cost.
         /// </summary>
         /// <param name="AmountTendered">The amount tendered by the customer.</param>
         /// <param name="TotalCost">The total cost of the purchase.</param>
         /// <returns>A new currency repository with the change for the given transaction.</returns>
-        public virtual ICurrencyRepo CreateChange(decimal AmountTendered, decimal TotalCost)
+        public ICurrencyRepo CreateChange(decimal AmountTendered, decimal TotalCost)
         {
             decimal changeAmount = AmountTendered - TotalCost;
 
             
             ICurrencyRepo repo = CreateInstance<ICurrencyRepo>(GetType());
-            List<Coin> coins = CoinValsByType(GetType()).Cast<Coin>().ToList();
+            List<ICoin> coins = CoinValsByType(GetType());
 
             // Sort the coins in descending order by value.
             coins.Sort((coin1, coin2) => -coin1.Value.CompareTo(coin2.Value));
@@ -216,5 +241,33 @@ namespace PROG301_MVC_Currency.Repos
         }
 
         #endregion
+
+        public ICurrencyRepo ConvertCoins(Type t)
+        {
+            ICurrencyRepo repo = CreateInstance<ICurrencyRepo>(t);
+            List<ICoin> coins = CoinValsByType(t);
+            coins = coins.OrderByDescending(coin => coin.Value).ToList();
+
+            decimal total = TotalXAUValue();
+
+            foreach (ICoin coin in coins)
+            {
+                // Calculate the number of coins needed to reach the remaining total XAU value
+                int numCoinsNeeded = (int)(total / coin.XAUValue);
+
+                // Add the calculated number of coins to the new repository
+                for (int i = 0; i < numCoinsNeeded; i++)
+                {
+                    repo.AddCoin(coin);
+                }
+
+                // Update the remaining total XAU value
+                total %= coin.XAUValue;
+            }
+
+            decimal tot = repo.TotalXAUValue();
+
+            return repo;
+        }
     }
 }

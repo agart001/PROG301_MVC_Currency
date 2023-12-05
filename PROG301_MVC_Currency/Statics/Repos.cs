@@ -17,6 +17,13 @@ namespace PROG301_MVC_Currency.Statics
         /// </summary>
         public struct CurRep
         {
+            public static Dictionary<Type, Type> RepoCoinType = new Dictionary<Type, Type>()
+            {
+                {typeof(USCurrencyRepo), typeof(USCoin)},
+                {typeof(UKCurrencyRepo), typeof(UKCoin)}
+            };
+
+
             /// <summary>
             /// A dictionary that maps currency repository types to their respective lists of ICoin objects.
             /// </summary>

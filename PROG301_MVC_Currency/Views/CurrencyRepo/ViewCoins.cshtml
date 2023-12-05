@@ -1,0 +1,35 @@
+﻿@using PROG301_MVC_Currency.Interfaces;
+@model ICoin[]
+
+<table class="table"
+       style="border: .25rem solid black;">
+    <thead>
+        <tr>
+            <th>
+                Name
+            </th>
+            <th>
+                Value
+            </th>
+            <th>
+                XAU
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model) 
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Value)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.XAUValue)
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

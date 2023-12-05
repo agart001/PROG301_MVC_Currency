@@ -1,0 +1,87 @@
+﻿@using PROG301_MVC_Currency.Interfaces;
+@using static PROG301_MVC_Currency.Statics.Repos.CurRep;
+@using static PROG301_MVC_Currency.Statics.Currency;
+@model PROG301_MVC_Currency.Interfaces.ICurrencyRepo
+
+@{
+    var repo = ViewData["Repo"] as ICurrencyRepo ?? throw new NullReferenceException(nameof(ViewData));
+
+
+    var coins = repo.Coins;
+    var coinCounts = repo.GetCoinCounts();
+
+    ICoin GetICoin(Type t) => (ICoin)Activator.CreateInstance(t);
+
+    ICoin[] CoinInCoins(Type t) => coins.FindAll(c => c.GetType() == t).ToArray();
+}
+
+<header style="display: flex;
+flex-flow: row;
+align-content: center;
+justify-content: space-between">
+    <h3>Type: @repo.GetType().Name</h3>
+
+    <h3>Count: @repo.GetCoinCount()</h3>
+
+    <h3>Value(@CurSymbolDict[RepoCoinType[repo.GetType()]]): @repo.TotalValue()</h3>
+
+    <h3>Value(XAU): @repo.TotalXAUValue()</h3>
+</header>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Name
+            </th>
+            <th>
+                Value
+            </th>
+            <th>
+                XAU
+            </th>
+            <th>
+                Count
+            </th>
+            <th>
+                Total Value
+            </th>
+            <th>
+                Total XAU
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var coinCount in coinCounts)
+        {
+            if(coinCount.Value > 0)
+            {
+                ICoin c = GetICoin(coinCount.Key);
+                decimal totalval = c.Value * coinCount.Value;
+                decimal totalxau = c.XAUValue * coinCount.Value;
+                string sXAUValue = c.XAUValue.ToString("G");
+                string sXAUTotal = totalxau.ToString("G");
+                <tr>
+                    <td>
+                        @Html.DisplayFor(model => coinCount.Key.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => c.Value)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => sXAUValue)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => coinCount.Value)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => totalval)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => sXAUTotal)
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

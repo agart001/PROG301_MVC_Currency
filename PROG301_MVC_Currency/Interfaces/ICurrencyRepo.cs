@@ -42,6 +42,14 @@ namespace PROG301_MVC_Currency.Interfaces
         public decimal TotalValue();
 
         /// <summary>
+        /// Calculates and returns the total XAU value of the ICoin objects in the currency repository.
+        /// </summary>
+        /// <returns>The total XAU value of the ICoin objects in the repository.</returns>
+        public decimal TotalXAUValue();
+
+        public Dictionary<Type, int> GetCoinCounts();
+
+        /// <summary>
         /// Creates a new currency repository with change for a specified amount.
         /// </summary>
         /// <param name="Amount">The amount for which change needs to be made.</param>
@@ -55,5 +63,22 @@ namespace PROG301_MVC_Currency.Interfaces
         /// <param name="TotalCost">The total cost of the purchase.</param>
         /// <returns>A new currency repository with the change for the given transaction.</returns>
         public ICurrencyRepo MakeChange(decimal AmountTendered, decimal TotalCost);
+
+        /// <summary>
+        /// Creates a new currency repository with change for a specified amount.
+        /// </summary>
+        /// <param name="Amount">The amount for which change needs to be made.</param>
+        /// <returns>A new currency repository with the change for the specified amount.</returns>
+        public ICurrencyRepo CreateChange(decimal Amount);
+
+        /// <summary>
+        /// Creates a new currency repository with change for a given amount tendered and total cost.
+        /// </summary>
+        /// <param name="AmountTendered">The amount tendered by the customer.</param>
+        /// <param name="TotalCost">The total cost of the purchase.</param>
+        /// <returns>A new currency repository with the change for the given transaction.</returns>
+        public ICurrencyRepo CreateChange(decimal AmountTendered, decimal TotalCost);
+
+        public ICurrencyRepo ConvertCoins(Type repo);
     }
 }
