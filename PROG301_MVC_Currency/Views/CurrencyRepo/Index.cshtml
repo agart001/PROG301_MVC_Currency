@@ -1,18 +1,17 @@
 ﻿@using PROG301_MVC_Currency.Interfaces;
 @using static PROG301_MVC_Currency.Statics.Repos.CurRep;
 @using static PROG301_MVC_Currency.Statics.Currency;
-@model PROG301_MVC_Currency.Interfaces.ICurrencyRepo
+@model PROG301_MVC_Currency.ViewModels.CurrencyRepoViewModel;
 
 @{
-    var repo = ViewData["Repo"] as ICurrencyRepo ?? throw new NullReferenceException(nameof(ViewData));
 
-    var coins = repo.Coins;
-    var coinCounts = repo.GetCoinCounts();
-    var reptypes = ViewData["RepTypes"] as string[] ?? throw new NullReferenceException(nameof(ViewData));
+    var reptypes = ViewData["RepTypes"] as Type[] ?? throw new NullReferenceException(nameof(ViewData));
+    
+    var title = ViewData["Title"] as string ?? throw new NullReferenceException(nameof(ViewData));
 
     ICoin GetICoin(Type t) => (ICoin)Activator.CreateInstance(t);
 
-    ICoin[] CoinInCoins(Type t) => coins.FindAll(c => c.GetType() == t).ToArray();
+    ICoin[] CoinInCoins(Type t) => Model.Coins.FindAll(c => c.GetType() == t).ToArray();
 }
 
 <header style=
@@ -25,19 +24,22 @@
         padding: 2rem;">
         Currency Repo Controller
     </h1>
+    <h2 style="align-self: center;">
+        @title
+    </h2>
     <div style=
         "display: flex;
         flex-flow: row;
         align-content: center;
         justify-content: space-between;
         margin-bottom: 2rem;">
-        <h3>Type: @repo.GetType().Name</h3>
+        <h3>Type: @Model.Type.Name</h3>
 
-        <h3>Count: @repo.GetCoinCount()</h3>
+        <h3>Count: @Model.CoinCount</h3>
 
-        <h3>Value(@CurSymbolDict[RepoCoinType[repo.GetType()]]): @repo.TotalValue()</h3>
+        <h3>Value(@CurSymbolDict[RepoCoinType[Model.Type]]): @Model.TotalValue</h3>
 
-        <h3>Value(XAU): @repo.TotalXAUValue()</h3>
+        <h3>Value(XAU): @Model.TotalXAUValue)</h3>
     </div>
 
 </header>
@@ -70,12 +72,11 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var coinCount in coinCounts)
+        @foreach (var coinCount in Model.CoinCounts)
         {
             if (coinCount.Value > 0)
             {
                 ICoin c = GetICoin(coinCount.Key);
-                ICoin[] c_array = CoinInCoins(coinCount.Key);
                 decimal totalval = c.Value * coinCount.Value;
                 decimal totalxau = c.XAUValue * coinCount.Value;
                 string sXAUValue = c.XAUValue.ToString("G");
@@ -100,7 +101,7 @@
                         @Html.DisplayFor(model => sXAUTotal)
                     </td>
                     <td>
-                        @Html.ActionLink("View", "ViewCoins", "CurrencyRepo", new { coins = c_array }, null)
+                        @Html.ActionLink("View", "ViewCoins", "CurrencyRepo", new { type = coinCount.Key.Name })
                     </td>
                 </tr>
             }
@@ -165,6 +166,70 @@
         </div>
     }
 
+    @using (Html.BeginForm("AddCoins", "CurrencyRepo", FormMethod.Post))
+    {
+        <div style="display: flex;
+    flex-flow: column;
+    gap: .5rem;
+    width: 15rem;">
+
+            <h4 style="text-align: center;
+        background: gray;
+        padding: .5rem;
+        border-radius: .25rem;">
+                Add Coins
+            </h4>
+            <div class="form-group">
+                <label for="type">Enter Type: </label>
+                <select name="type">
+                    @{
+                        foreach (Type t in Model.CoinCounts.Keys)
+                        {
+                            <option value="@t.Name">@t.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="amount">Enter Amount:</label>
+                <input type="text" name="amount" class="form-control"/>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    }
+
+    @using (Html.BeginForm("RemoveCoins", "CurrencyRepo", FormMethod.Post))
+    {
+        <div style="display: flex;
+    flex-flow: column;
+    gap: .5rem;
+    width: 15rem;">
+
+            <h4 style="text-align: center;
+        background: gray;
+        padding: .5rem;
+        border-radius: .25rem;">
+                Remove Coins
+            </h4>
+            <div class="form-group">
+                <label for="type">Enter Type: </label>
+                <select name="type">
+                    @{
+                        foreach (Type t in Model.CoinCounts.Keys)
+                        {
+                            <option value="@t.Name">@t.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="amount">Enter Amount:</label>
+                <input type="text" name="amount" class="form-control" />
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    }
+
     @using (Html.BeginForm("ConvertCoin", "CurrencyRepo", FormMethod.Post))
     {
         <div style="display: flex;
@@ -182,9 +247,10 @@
                 <label for="type">Enter Type: </label>
                 <select name="type">
                     @{
-                        foreach (string rep in reptypes)
+                        foreach (Type type in reptypes)
                         {
-                            <option value="@rep">@rep</option>
+                            var name = new string(type.Name.TakeWhile(c => c != 'C').ToArray());
+                            <option value="@type.Name">@name</option>
                         }
                     }
                 </select>

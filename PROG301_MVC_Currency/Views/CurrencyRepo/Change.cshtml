@@ -1,34 +1,45 @@
 ﻿@using PROG301_MVC_Currency.Interfaces;
 @using static PROG301_MVC_Currency.Statics.Repos.CurRep;
 @using static PROG301_MVC_Currency.Statics.Currency;
-@model PROG301_MVC_Currency.Interfaces.ICurrencyRepo
+@model PROG301_MVC_Currency.ViewModels.CurrencyRepoViewModel;
 
 @{
-    var repo = ViewData["Repo"] as ICurrencyRepo ?? throw new NullReferenceException(nameof(ViewData));
 
+    var reptypes = ViewData["RepTypes"] as Type[] ?? throw new NullReferenceException(nameof(ViewData));
 
-    var coins = repo.Coins;
-    var coinCounts = repo.GetCoinCounts();
+    var title = ViewData["Title"] as string ?? throw new NullReferenceException(nameof(ViewData));
 
     ICoin GetICoin(Type t) => (ICoin)Activator.CreateInstance(t);
-
-    ICoin[] CoinInCoins(Type t) => coins.FindAll(c => c.GetType() == t).ToArray();
 }
 
 <header style="display: flex;
-flex-flow: row;
-align-content: center;
-justify-content: space-between">
-    <h3>Type: @repo.GetType().Name</h3>
+    flex-flow: column;
+    align-content: center;
+    justify-content: space-between">
+    <h1 style="align-self: center;
+        padding: 2rem;">
+        Currency Repo Controller
+    </h1>
+    <h2 style="align-self: center;">
+        @title
+    </h2>
+    <div style="display: flex;
+        flex-flow: row;
+        align-content: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;">
+        <h3>Type: @Model.Type.Name</h3>
 
-    <h3>Count: @repo.GetCoinCount()</h3>
+        <h3>Count: @Model.CoinCount</h3>
 
-    <h3>Value(@CurSymbolDict[RepoCoinType[repo.GetType()]]): @repo.TotalValue()</h3>
+        <h3>Value(@CurSymbolDict[RepoCoinType[Model.Type]]): @Model.TotalValue</h3>
 
-    <h3>Value(XAU): @repo.TotalXAUValue()</h3>
+        <h3>Value(XAU): @Model.TotalXAUValue)</h3>
+    </div>
+
 </header>
-
-<table class="table">
+<table class="table"
+       style="border: .25rem solid black;">
     <thead>
         <tr>
             <th>
@@ -49,12 +60,15 @@ justify-content: space-between">
             <th>
                 Total XAU
             </th>
+            <th>
+                View
+            </th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var coinCount in coinCounts)
+        @foreach (var coinCount in Model.CoinCounts)
         {
-            if(coinCount.Value > 0)
+            if (coinCount.Value > 0)
             {
                 ICoin c = GetICoin(coinCount.Key);
                 decimal totalval = c.Value * coinCount.Value;
@@ -79,6 +93,9 @@ justify-content: space-between">
                     </td>
                     <td>
                         @Html.DisplayFor(model => sXAUTotal)
+                    </td>
+                    <td>
+                        @Html.ActionLink("View", "ViewCoins", "CurrencyRepo", new { type = coinCount.Key.Name })
                     </td>
                 </tr>
             }

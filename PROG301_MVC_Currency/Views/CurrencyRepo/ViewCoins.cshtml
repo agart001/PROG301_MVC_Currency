@@ -1,6 +1,39 @@
 ﻿@using PROG301_MVC_Currency.Interfaces;
-@model ICoin[]
+@using static PROG301_MVC_Currency.Statics.Currency;
+@model PROG301_MVC_Currency.ViewModels.IEnumerableViewModel<ICoin>;
 
+@{
+    var title = ViewData["Title"] as string ?? throw new NullReferenceException(nameof(ViewData));
+    var totalValue = (decimal)Model.ContentFields["Value"] * Model.Count;
+    var totalXAUValue = (decimal)Model.ContentFields["XAUValue"] * Model.Count;
+}
+
+<header style="display: flex;
+    flex-flow: column;
+    align-content: center;
+    justify-content: space-between">
+    <h1 style="align-self: center;
+        padding: 2rem;">
+        Currency Repo Controller
+    </h1>
+    <h2 style="align-self: center;">
+        @title
+    </h2>
+    <div style="display: flex;
+        flex-flow: row;
+        align-content: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;">
+        <h3>Type: @Model.ContentType.Name</h3>
+
+        <h3>Count: @Model.Count</h3>
+
+        <h3>Value(@CurSymbolDict[Model.ContentType.BaseType]): @totalValue</h3>
+
+        <h3>Value(XAU): @totalXAUValue)</h3>
+    </div>
+
+</header>
 <table class="table"
        style="border: .25rem solid black;">
     <thead>
@@ -17,7 +50,7 @@
         </tr>
     </thead>
     <tbody>
-    @foreach (var item in Model) 
+    @foreach (var item in Model.Enum) 
     {
         <tr>
             <td>
