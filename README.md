@@ -7,10 +7,7 @@ Web-App
 C# .NET MVC
 
 ## Project Date
-01 March, 2020
-
-## Project URL
-[www.example.com]([https://www.example.com](https://github.com/agart001/PROG301_MVC_Currency/edit/main/README.md))
+December 12, 2023
 
 ## Description
-Autem ipsum nam porroCertainly! I can help you modify the script to read the repo's README.md and parse the information into the desired elements. Here's the modified script:
+This assignment was meant to be an example of how to merge a tested class library with an interface and properly connect the controller to the viewmodel and the viewmodel to the tested class/model. The class library was from a previous assignment which focused on inheritence. dependency injection and the "repo" design pattern.
